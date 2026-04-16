@@ -1,0 +1,49 @@
+<!-- frontend/login.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>登录  PoE2 网页市集系统</title>
+    <!-- 引入专门为登录页面设计的CSS -->
+    <link rel="stylesheet" href="css/login-style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <!-- Vue应用的挂载点 -->
+    <div id="login-app" class="login-container">
+
+        <!-- 登录框 -->
+        <div class="login-box">
+
+            <!-- 头部LOGO -->
+            <div class="login-header">
+                <img src="images/logo.png" alt="Path of Exile 2 Logo" class="logo">
+                <!-- 如果没有图片，可以用文字代替 -->
+                <!-- <h2>PoE2 Market</h2> -->
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="login-body">
+                <div class="input-group">
+                    <input type="text" v-model="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" v-model="password" placeholder="Password" @keyup.enter="login" required>
+                </div>
+
+                <!-- 登录按钮 -->
+                <button @click="login" class="login-button">Sign In</button>
+
+                <!-- 错误信息提示 -->
+                <p v-if="error" class="error-message">{{ error }}</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 引入Vue和Axios -->
+
+    <!-- 引入登录页面的JS逻辑 -->
+    <script src="js/login.js"></script>
+</body>
+</html>

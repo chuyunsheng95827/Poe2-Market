@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE2 网页市集系统</title>
+    <!-- 引入我们自己的CSS样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入Vue.js 3 和 Axios -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app" class="container">
+
+        <header>
+            <h1>PoE2 网页市集初步</h1>
+
+
+        </header>
+
+        <!-- ======================================================== -->
+        <!-- 核心：全新的过滤器系统 -->
+        <!-- ======================================================== -->
+        <section class="filter-system">
+
+            <!-- 所有可折叠的过滤器都放在这里面 -->
+            <div class="collapsible-filters">
+                <!-- 第一行：三个下拉菜单输入框 (保持不变) -->
+                <!-- ============================================= -->
+                <!-- 第一行 (最终的、精确对齐版) -->
+                <!-- ============================================= -->
+                <div class="filter-row top-bar">
+                    <!-- 给它一个特殊的class，叫top-bar -->
+                    <!-- 左侧的登出按钮 -->
+                    <button @click="logout" class="logout-button">登出</button>
+
+                    <!-- 右侧的下拉框组合 -->
+                    <div class="top-bar-controls">
+                        <div class="search-box compact">
+                            <select>
+                                <option>任何模式</option>
+                                <option>PoE2 - Dawn of the Hunt</option>
+                            </select>
+                        </div>
+                        <div class="search-box compact">
+                            <select>
+                                <option>在线</option>
+                                <option>任意</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!--
+        【未来的多维过滤器将在这里添加】
+        这个区域默认是隐藏的，点击 "SHOW FILTERS" 后会显示
+    -->
+                <!-- 【这里是你要替换的部分】 -->
+                <div class="advanced-filters" v-if="showAdvancedFilters">
+
+                    <!-- 多维过滤器的主网格布局 -->
+                    <div class="advanced-grid">
+
+                        <!-- 左侧列：四个过滤器 -->
+                        <div class="filter-column-advanced">
+
+                            <!-- ====================================================== -->
+                            <!-- 1. TYPE FILTERS (全新、精细化布局) -->
+                            <!-- ====================================================== -->
+                            <div class="filter-block">
+                                <div class="filter-block-header" @click="toggleFilterBlock('type')">
+                                    <input type="checkbox" v-model="activeFilters.type" @click.stop>
+                                    <label>TYPE FILTERS</label>
+                                </div>
+
+                                <!-- v-if指令控制内容的显示/隐藏 -->
+                                <div class="filter-block-content" v-if="activeFilters.type">
+
+                                    <!-- 第一行: Item Category -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Item Category</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <!-- v-model绑定到item_category -->
+                                                <select v-model="filters.item_category">
+                                                    <option value="any">Any</option>
+                                                    <option value="ring">ring</option>
+                                                    <option value="Spear">Spear</option>
+                                                    <option value="Shield">Shield</option>
+                                                    <option value="Crossbow">Crossbow</option>
+                                                    <option value="Belt">Belt</option>
+                                                    <option value="Quarterstaff">Quarterstaff</option>
+                                                    <option value="Bow">Bow</option>
+                                                    <option value="Wand">Wand</option>
+                                                    <option value="Staff">Staff</option>
+                                                    <option value="Helmet">Helmet</option>
+                                                    <option value="Body Armour">Body Armour</option>
+                                                    <option value="Gloves">Gloves</option>
+                                                    <option value="Boots">Boots</option>
+                                                    <option value="Quiver">Quiver</option>
+                                                    <option value="Focus">Focus</option>
+                                                    <option value="Buckler">Buckler</option>
+                                                    <option value="Sceptre">Sceptre</option>
+                                                    <!-- ... -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第二行: Item Rarity -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Item Rarity</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <select v-model="filters.item_rarity">
+                                                    <option value="any">Any</option><!--待添加模块-->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第三行: Item Level 和 Item Quality -->
+                                    <div class="filter-line">
+                                        <!-- 左半部分: Item Level -->
+                                        <span class="filter-label">Item Level</span>
+                                        <div class="filter-control">
+                                            <div class="dual-input compact">
+                                                <!-- v-model绑定到item_level_min和item_level_max -->
+                                                <input type="number" v-model.number="filters.item_level_min" placeholder="Min">
+                                                <input type="number" v-model.number="filters.item_level_max" placeholder="Max">
+                                            </div>
+                                        </div>
+
+                                        <!-- 右半部分: Item Quality -->
+                                        <span class="filter-label">Item Quality</span>
+                                        <div class="filter-control">
+                                            <div class="dual-input compact">
+                                                <input type="number" v-model.number="filters.quality_min" placeholder="Min">
+                                                <input type="number" v-model.number="filters.quality_max" placeholder="Max">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- ====================================================== -->
+                            <!-- 2. EQUIPMENT FILTERS (全新、专业级布局) -->
+                            <!-- ====================================================== -->
+                            <div class="filter-block">
+                                <div class="filter-block-header" @click="toggleFilterBlock('equipment')">
+                                    <input type="checkbox" v-model="activeFilters.equipment" @click.stop>
+                                    <label>EQUIPMENT FILTERS</label>
+                                </div>
+
+                                <div class="filter-block-content" v-if="activeFilters.equipment">
+
+                                    <!-- 我们使用一个网格来创建严格的两列 -->
+                                    <div class="equipment-grid">
+
+                                        <!-- 第1-4行: 武器相关 -->
+                                        <div class="filter-line-half"><span class="filter-label">Damage</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.damage_min"><input type="number" placeholder="Max" v-model.number="filters.damage_max"></div></div></div>
+                                        <div class="filter-line-half"><span class="filter-label">Attacks per Second</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.aps_min"><input type="number" placeholder="Max" v-model.number="filters.aps_max"></div></div></div>
+
+                                        <div class="filter-line-half"><span class="filter-label">Critical Chance</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.crit_min"><input type="number" placeholder="Max" v-model.number="filters.crit_max"></div></div></div>
+                                        <div class="filter-line-half"><span class="filter-label">Damage per Second</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.dps_min"><input type="number" placeholder="Max" v-model.number="filters.dps_max"></div></div></div>
+
+                                        <div class="filter-line-half"><span class="filter-label">Physical DPS</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.phys_dps_min"><input type="number" placeholder="Max" v-model.number="filters.phys_dps_max"></div></div></div>
+                                        <div class="filter-line-half"><span class="filter-label">Elemental DPS</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.ele_dps_min"><input type="number" placeholder="Max" v-model.number="filters.ele_dps_max"></div></div></div>
+
+                                        <!-- 第4行只有左边，右边是空的div占位 -->
+                                        <div class="filter-line-half"><span class="filter-label">Reload Time</span><div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.reload_min"><input type="number" placeholder="Max" v-model.number="filters.reload_max"></div></div></div>
+                                        <div></div> <!-- 空div，用于网格占位 -->
+                                        <!-- 分割线 -->
+                                        <hr class="grid-separator">
+                                        <hr class="grid-separator">
+
+                                        <!-- 第5-7行: 防御和通用 -->
+                                        <div class="filter-line-half">
+                                            <span class="filter-label with-tooltip">
+                                                Armour
+                                                <span class="tooltip-icon">(?)</span>
+                                                <span class="tooltip-text">Includes base value, local modifiers, and maximum quality</span>
+                                            </span>
+                                            <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.armour_min"><input type="number" placeholder="Max" v-model.number="filters.armour_max"></div></div>
+                                        </div>
+                                        <div class="filter-line-half">
+                                            <span class="filter-label with-tooltip">
+                                                Evasion
+                                                <span class="tooltip-icon">(?)</span>
+                                                <span class="tooltip-text">Includes base value, local modifiers, and maximum quality</span>
+                                            </span>
+                                            <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.evasion_min"><input type="number" placeholder="Max" v-model.number="filters.evasion_max"></div></div>
+                                        </div>
+
+                                        <div class="filter-line-half">
+                                            <span class="filter-label with-tooltip">
+                                                Energy Shield
+                                                <span class="tooltip-icon">(?)</span>
+                                                <span class="tooltip-text">Includes base value, local modifiers, and maximum quality</span>
+                                            </span>
+                                            <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.es_min"><input type="number" placeholder="Max" v-model.number="filters.es_max"></div></div>
+                                        </div>
+                                        <div class="filter-line-half">
+                                            <span class="filter-label with-tooltip">
+                                                Block
+                                                <span class="tooltip-icon">(?)</span>
+                                                <span class="tooltip-text">Includes base value and local modifiers</span>
+                                            </span>
+                                            <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.block_min"><input type="number" placeholder="Max" v-model.number="filters.block_max"></div></div>
+                                        </div>
+
+                                        <div class="filter-line-half">
+                                            <span class="filter-label with-tooltip">
+                                                Spirit
+                                                <span class="tooltip-icon">(?)</span>
+                                                <span class="tooltip-text">Includes base value, local modifiers, and maximum quality</span>
+                                            </span>
+                                            <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.spirit_min"><input type="number" placeholder="Max" v-model.number="filters.spirit_max"></div></div>
+                                        </div>
+                                        <!--
+                            <div class="filter-line-half">
+                                <span class="filter-label">Rune Sockets</span>
+                                <div class="filter-control"><div class="dual-input compact"><input type="number" placeholder="Min" v-model.number="filters.sockets_min"><input type="number" placeholder="Max" v-model.number="filters.sockets_max"></div></div>
+                            </div>
+                             -->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ====================================================== -->
+                            <!-- 3. REQUIREMENTS (使用与Equipment一致的网格布局) -->
+                            <!-- ====================================================== -->
+                            <div class="filter-block">
+                                <div class="filter-block-header" @click="toggleFilterBlock('requirements')">
+                                    <input type="checkbox" v-model="activeFilters.requirements" @click.stop>
+                                    <label>REQUIREMENTS</label>
+                                </div>
+
+                                <div class="filter-block-content" v-if="activeFilters.requirements">
+
+                                    <!-- 我们复用equipment-grid的样式来创建严格的两列 -->
+                                    <div class="equipment-grid">
+
+                                        <!-- 第一行 -->
+                                        <div class="filter-line-half">
+                                            <span class="filter-label">Level</span>
+                                            <div class="filter-control">
+                                                <div class="dual-input compact">
+                                                    <input type="number" v-model.number="filters.req_level_min" placeholder="Min">
+                                                    <input type="number" v-model.number="filters.req_level_max" placeholder="Max">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="filter-line-half">
+                                            <span class="filter-label">Strength</span>
+                                            <div class="filter-control">
+                                                <div class="dual-input compact">
+                                                    <input type="number" v-model.number="filters.req_str_min" placeholder="Min">
+                                                    <input type="number" v-model.number="filters.req_str_max" placeholder="Max">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 第二行 -->
+                                        <div class="filter-line-half">
+                                            <span class="filter-label">Dexterity</span>
+                                            <div class="filter-control">
+                                                <div class="dual-input compact">
+                                                    <input type="number" v-model.number="filters.req_dex_min" placeholder="Min">
+                                                    <input type="number" v-model.number="filters.req_dex_max" placeholder="Max">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="filter-line-half">
+                                            <span class="filter-label">Intelligence</span>
+                                            <div class="filter-control">
+                                                <div class="dual-input compact">
+                                                    <input type="number" v-model.number="filters.req_int_min" placeholder="Min">
+                                                    <input type="number" v-model.number="filters.req_int_max" placeholder="Max">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ====================================================== -->
+                            <!-- 4. TRADE FILTERS (使用单行布局) -->
+                            <!-- ====================================================== -->
+                            <div class="filter-block">
+                                <div class="filter-block-header" @click="toggleFilterBlock('trade')">
+                                    <input type="checkbox" v-model="activeFilters.trade" @click.stop>
+                                    <label>TRADE FILTERS</label>
+                                </div>
+
+                                <div class="filter-block-content" v-if="activeFilters.trade">
+
+                                    <!-- 第一行: Seller Account -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Seller Account</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <input type="text" v-model="filters.seller_account" placeholder="Enter account name...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第二行: Collapse Listings -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Collapse Listings by Account</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <select v-model="filters.collapse_listings">
+                                                    <option value="no">No</option>
+                                                    <option value="yes">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第三行: Listed -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Listed</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <select v-model="filters.listed_time">
+                                                    <option value="any">Any Time</option> <!--需要修改数据库结构，待后续进一步开发-->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第四行: Sale Type -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Sale Type</span>
+                                        <div class="filter-control">
+                                            <div class="search-box compact">
+                                                <select v-model="filters.sale_type">
+                                                    <option value="any">Buyout or Fixed Price</option><!--需要修改数据库结构，待后续进一步开发-->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 第五行: Buyout Price -->
+                                    <div class="filter-line">
+                                        <span class="filter-label">Buyout Price</span>
+                                        <div class="filter-control combined-control">
+                                            <!-- 使用一个新的class来组合控件 -->
+                                            <div class="search-box compact">
+                                                <select v-model="filters.buyout_currency">
+                                                    <option value="any">Any</option>
+                                                    <option value="Mirror of Kalandra">Mirror of Kalandra</option>
+                                                    <option value="Divine Orb">Divine Orb</option>
+                                                    <option value="Chaos Orb">Chaos Orb</option>
+                                                    <option value="Exalted Orb">Exalted Orb</option>
+                                                    <option value="Orb of Alchemy">Orb of Alchemy</option>
+                                                    <option value="Regal Orb">Regal Orb</option>
+                                                    <option value="Orb of Annulment">Orb of Annulment</option>
+                                                    <option value="Orb of Augmentation">Orb of Augmentation</option>
+                                                    <option value="Orb of Transmutation">Orb of Transmutation</option>
+                                                    <option value="Vaal Orb">Vaal Orb</option>
+                                                    <option value="Vaal Orb">Vaal Orb</option>
+                                                    <option value="Vaal Orb">Vaal Orb</option>
+                                                </select>
+                                            </div>
+                                            <div class="dual-input compact">
+                                                <input type="number" v-model.number="filters.buyout_min" placeholder="Min">
+                                                <input type="number" v-model.number="filters.buyout_max" placeholder="Max">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- 右侧列：一个过滤器 + 按钮 -->
+                        <div class="filter-column-advanced">
+
+                            <!-- ====================================================== -->
+                            <!-- 5. STAT FILTERS (动态、可添加的布局) -->
+                            <!-- ====================================================== -->
+                            <div class="filter-block">
+                                <div class="filter-block-header" @click="toggleFilterBlock('stats')">
+                                    <input type="checkbox" v-model="activeFilters.stats" @click.stop>
+                                    <label>STAT FILTERS</label>
+                                </div>
+
+                                <div class="filter-block-content stat-filter-content" v-if="activeFilters.stats">
+
+                                    <!-- 使用v-for循环来渲染已经添加的每一个词缀过滤器 -->
+                                    <div v-for="(statFilter, index) in filters.stat_filters" :key="index" class="stat-filter-line">
+
+                                        <!-- 勾选框 -->
+                                        <input type="checkbox" v-model="statFilter.active" class="stat-filter-checkbox">
+
+                                        <!-- 词缀名称 -->
+                                        <span class="stat-filter-label">{{ statFilter.label }}</span>
+
+                                        <!-- Min/Max 输入框 -->
+                                        <div class="filter-control">
+                                            <div class="dual-input compact">
+                                                <input type="number" v-model.number="statFilter.min" placeholder="Min">
+                                                <input type="number" v-model.number="statFilter.max" placeholder="Max">
+                                            </div>
+                                        </div>
+
+                                        <!-- 删除按钮 -->
+                                        <button @click="removeStatFilter(index)" class="remove-stat-button">×</button>
+                                    </div>
+
+                                    <!-- 【采用这个新的、你更喜欢的<input> + <datalist>方案】 -->
+                                    <div class="add-stat-filter-row">
+                                        <!--
+                              我们使用一个<input>来提供自由输入和搜索的功能。
+                              它的list属性指向下面<datalist>的id。
+                            -->
+                                        <input list="stat-options"
+                                               class="add-stat-input"
+                                               placeholder="+ Add Stat Filter"
+                                               @change="handleStatInputChange($event)"
+                                               @focus="$event.target.value = ''">
+                                        <!--
+                              <datalist>提供了下拉选项。
+                              Vue的v-for会动态地用我们availableStats数组里的数据来填充它。
+                            -->
+                                        <datalist id="stat-options">
+                                            <option v-for="stat in availableStats" :key="stat.id" :value="stat.label"></option>
+                                        </datalist>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作行：永远在最底部 -->
+            <div class="action-bar">
+
+                <!-- 左侧：添加商品按钮 -->
+                <div class="action-bar-side action-bar-left">
+                    <button @click="showAddItemModal = true" class="toggle-filters-button">
+                        ADD ITEM
+                    </button>
+                </div>
+
+                <!-- 中间：绝对居中的搜索按钮 -->
+                <div class="action-bar-center">
+                    <button @click="search" class="search-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
+                        Search
+                    </button>
+                </div>
+
+
+                <!-- 右侧：清空和显示/隐藏按钮 -->
+                <div class="action-bar-side action-bar-right">
+                    <button @click="clearFilters" class="clear-button">Clear</button>
+                    <!-- 使用 v-if 和 v-else 来切换按钮文本 -->
+                    <button @click="toggleAdvancedFilters" class="toggle-filters-button">
+                        <span v-if="!showAdvancedFilters">SHOW FILTERS</span>
+                        <span v-else>HIDE FILTERS</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </section> <!-- 过滤器系统结束 -->
+        <!-- ======================================================== -->
+        <!-- 结果展示区 (最终安全渲染版) -->
+        <!-- ======================================================== -->
+        <ul v-if="!isLoading && items.length > 0" class="results-list">
+
+            <li v-for="item in items" :key="item.ItemID" class="result-item" :class="{ 'corrupted': item.IsCorrupted }">
+
+                <!-- 1. 左侧列：图片 -->
+                <div class="item-col item-col-left">
+                    <img :src="item.ItemImageURL" v-if="item.ItemImageURL" class="item-image">
+                    <div class="item-image-placeholder" v-else></div>
+                </div>
+
+                <!-- 2. 中间列：详细信息 -->
+                <div class="item-col item-col-middle">
+                    <div class="item-header-display">
+                        <h3 class="item-name">{{ item.ItemName }}</h3>
+                        <p class="base-type">{{ item.BaseType }}</p>
+                    </div>
+
+                    <!-- 【核心修正】在这里，我们对每一个可能为null的数字，都进行检查和格式化 -->
+                    <template v-if="hasProperties(item)">
+                        <hr class="separator">
+                        <div class="properties-section">
+                            <div v-for="prop in getDisplayableProperties(item)" :key="prop.label" class="property-line">
+                                {{ prop.label }}: <span class="prop-value">{{ prop.value }}</span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- 物品等级 -->
+                    <template v-if="item.ItemLevel">
+                        <hr class="separator">
+                        <div class="property-line">Item Level: <span class="prop-value">{{ item.ItemLevel }}</span></div>
+                    </template>
+
+                    <!-- 需求 -->
+                    <template v-if="item.RequiredLevel">
+                        <div class="requirements-line">
+                            Requires Level <span class="prop-value">{{ item.RequiredLevel }}</span>
+                            <template v-if="item.RequiredStr">
+                                ,
+                                <span class="prop-value">{{ item.RequiredStr }}</span> Str
+                            </template>
+                            <template v-if="item.RequiredDex">
+                                ,
+                                <span class="prop-value">{{ item.RequiredDex }}</span> Dex
+                            </template>
+                            <template v-if="item.RequiredInt">
+                                ,
+                                <span class="prop-value">{{ item.RequiredInt }}</span> Int
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- 自带技能 -->
+                    <template v-if="item.SkillName">
+                        <hr class="separator">
+                        <div class="skill-line">GrantedSkill:   <span class="skill-name-text">{{ item.SkillName }}</span></div>
+                    </template>
+
+                    <!-- 词缀列表 -->
+                    <template v-if="item.AllAffixes && item.AllAffixes.length > 0">
+                        <hr class="separator">
+                        <ul class="affix-list">
+                            <li v-for="(affix, index) in item.AllAffixes" :key="index" class="affix-item implicit">
+                                <!-- 你可以用class来区分不同类型的词缀 -->
+                                {{ affix }}
+                            </li>
+                        </ul>
+                    </template>
+
+                    <!-- 腐化信息 -->
+                    <template v-if="item.IsCorrupted">
+                        <hr class="separator">
+                        <div class="corrupted-tag">CORRUPTED</div>
+                    </template>
+                </div>
+
+                <!-- 3. 右侧列：卖家与价格 -->
+                <div class="item-col item-col-right">
+                    <div class="price-box">
+                        <p class="price-label">EXACT PRICE:</p>
+                        <div class="price-value-line">
+                            <!-- 关键修正：对价格也进行安全检查 -->
+                            <span class="price-amount" v-if="typeof item.PriceAmount === 'number'">
+                                {{ item.PriceAmount.toFixed(0) }}
+                            </span>
+                            <!-- 如果不是数字（以防万一），就直接显示它 -->
+                            <span class="price-amount" v-else>
+                                {{ item.PriceAmount }}
+                            </span>
+                            <span class="currency-name">{{ item.CurrencyName }}</span>
+                        </div>
+                    </div>
+                    <div class="seller-info">
+                        <a href="#" class="seller-name">{{ item.UserName }}</a>
+                        <span class="listed-time">{{ item.ListedAtText }}</span>
+                    </div>
+
+                    <div class="actions">
+                        <span class="online-status">Online</span>
+                        <!--
+                           【新增】购买按钮！
+                           - @click事件调用我们即将创建的buyItem方法
+                           - 传入当前物品的ItemID作为参数
+                        -->
+                        <button @click="buyItem(item.ItemID)" class="buy-button">购买</button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- ====================================================== -->
+        <!-- 【新增】添加商品的弹窗 (Modal) -->
+        <!-- 使用v-if来控制它的显示和隐藏 -->
+        <!-- ====================================================== -->
+        <div v-if="showAddItemModal" class="modal-overlay">
+            <div class="modal-content">
+
+                <!-- 弹窗头部 -->
+                <div class="modal-header">
+                    <h2>Add New Item to Market</h2>
+                    <!-- 关闭按钮 -->
+                    <button @click="showAddItemModal = false" class="close-modal-button">×</button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- 我们使用一个两列网格来布局表单 -->
+                    <div class="form-grid">
+
+                        <!-- 左侧列 -->
+                        <div class="form-column">
+                            <h4>基本信息</h4>
+                            <div class="form-group"><label>Item Name</label><input type="text" v-model="newItem.ItemName"></div>
+                            <div class="form-group"><label>Base Type</label><input type="text" v-model="newItem.BaseType"></div>
+                            <div class="form-group"><label>Skill Name</label><input type="text" v-model="newItem.SkillName"></div>
+                            <div class="form-group"><label>Item Category</label><input type="text" v-model="newItem.ItemCategory"></div>
+                            <div class="form-group"><label>Item Image URL</label><input type="text" v-model="newItem.ItemImageURL"></div>
+
+                            <h4>需求 & 等级</h4>
+                            <div class="form-group-inline"><label>Item Level</label><input type="number" v-model.number="newItem.ItemLevel"></div>
+                            <div class="form-group-inline"><label>Quality (%)</label><input type="number" v-model.number="newItem.Quality"></div>
+                            <div class="form-group-inline"><label>Requires Level</label><input type="number" v-model.number="newItem.RequiredLevel"></div>
+                            <div class="form-group-inline"><label>Requires Str</label><input type="number" v-model.number="newItem.RequiredStr"></div>
+                            <div class="form-group-inline"><label>Requires Dex</label><input type="number" v-model.number="newItem.RequiredDex"></div>
+                            <div class="form-group-inline"><label>Requires Int</label><input type="number" v-model.number="newItem.RequiredInt"></div>
+
+                            <h4>交易信息</h4>
+                            <div class="form-group-inline"><label>Price Amount</label><input type="number" v-model.number="newItem.PriceAmount"></div>
+                            <div class="form-group">
+                                <label>Currency</label>
+                                <select v-model="newItem.CurrencyName">
+                                    <option>Divine Orb</option>
+                                    <option>Chaos Orb</option>
+                                    <option>Exalted Orb</option>
+                                    <option>Regal Orb</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Seller Name</label><input type="text" v-model="newItem.UserName"></div>
+                            <div class="form-group"><label>Is Corrupted?</label><input type="checkbox" v-model="newItem.IsCorrupted"></div>
+                        </div>
+
+                        <!-- 右侧列 -->
+                        <div class="form-column">
+                            <h4>专属属性</h4>
+                            <div class="form-group-inline"><label>Physical Dmg (Min/Max)</label><div class="dual-input"><input type="number" v-model.number="newItem.PhysicalDmgMin"><input type="number" v-model.number="newItem.PhysicalDmgMax"></div></div>
+                            <div class="form-group-inline"><label>Crit Chance (%)</label><input type="number" step="0.01" v-model.number="newItem.CritChance"></div>
+                            <div class="form-group-inline"><label>Attacks per Second</label><input type="number" step="0.01" v-model.number="newItem.AttacksPerSecond"></div>
+
+                            <h4>词缀 (Affixes)</h4>
+                            <!-- 使用 v-for 循环渲染已添加的每一个词缀 -->
+                            <div v-for="(affix, index) in newItem.AllAffixes" :key="index" class="dynamic-affix-row">
+                                <input type="text" v-model="newItem.AllAffixes[index]" class="affix-input">
+                                <button @click="removeNewItemAffix(index)" class="remove-affix-button">×</button>
+                            </div>
+                            <!-- 用于添加新词缀的输入行 -->
+                            <div class="add-affix-row">
+                                <input type="text" v-model="newAffixText" placeholder="输入新词缀..." @keyup.enter="addNewItemAffix">
+                                <button @click="addNewItemAffix">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 弹窗底部 -->
+                <div class="modal-footer">
+                    <button @click="showAddItemModal = false" class="cancel-button">Cancel</button>
+                    <button @click="submitNewItem" class="submit-button">Submit Item</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 引入JS文件 (逻辑将在下一步添加) -->
+    <script src="js/main.js"></script>
+</body>
+</html>

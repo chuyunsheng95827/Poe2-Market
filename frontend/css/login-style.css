@@ -1,0 +1,103 @@
+/* frontend/css/login-style.css */
+
+/* 定义明亮主题的颜色变量 */
+:root {
+    --bg-color: #eef2f5; /* 明亮的浅灰色背景 */
+    --panel-bg-color: #ffffff; /* 登录框的纯白背景 */
+    --text-color: #3d5266; /* 深灰色文本 */
+    --text-color-light: #9aa8b6; /* 浅灰色文本，用于placeholder */
+    --primary-color: #007bff; /* 主题色 - 蓝色 */
+    --primary-color-hover: #0056b3; /* 主题色悬停 */
+    --border-color: #d1d9e0; /* 边框颜色 */
+    --error-color: #dc3545; /* 错误信息 - 红色 */
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body, html {
+    height: 100%; /* 让body和html占满整个视口高度 */
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+}
+
+/* 核心：全屏居中容器 */
+.login-container {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    min-height: 100vh; /* 最小高度为整个视口的高度 */
+    padding: 20px;
+}
+
+/* 登录框主体样式 */
+.login-box {
+    width: 100%;
+    max-width: 400px; /* 登录框的最大宽度 */
+    background-color: var(--panel-bg-color);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+/* 头部LOGO样式 */
+.login-header {
+    margin-bottom: 30px;
+}
+
+.logo {
+    max-width: 200px; /* 控制LOGO图片的最大宽度 */
+    height: auto;
+}
+
+/* 输入框组样式 */
+.input-group {
+    margin-bottom: 20px;
+}
+
+    .input-group input {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 1rem;
+        color: var(--text-color);
+        background-color: var(--bg-color); /* 输入框背景使用页面的背景色 */
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+        .input-group input::placeholder {
+            color: var(--text-color-light);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+/* 登录按钮样式 */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .login-button:hover {
+        background-color: var(--primary-color-hover);
+    }
+
+/* 错误信息样式 */
+.error-message {
+    margin-top: 15px;
+    color: var(--error-color);
+    font-size: 0.9rem;
+}
